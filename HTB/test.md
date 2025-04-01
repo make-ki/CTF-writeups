@@ -3,7 +3,7 @@
 
 ### rev_sealrune
 This was the easiest warmup challenge, the flag was reavealed after a simple binary patch.
-![image](https://hackmd.io/_uploads/HJDgKWj2Jl.png)
+![Hidden Git](https://hackmd.io/_uploads/HJDgKWj2Jl.png)
 
 ### rev_encryptedscroll
 We were again given a non stripped elf. 
