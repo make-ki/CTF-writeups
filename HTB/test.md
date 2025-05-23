@@ -100,6 +100,9 @@ Perplexity did a good job at boiling down the location to `356 Longfellow Road` 
 
 This trash can is the same we can see in the image given to us.
 But the number plate of the car looks like california. And since a trash could be similar anywhere, I went with california. 
+Post CTF Comment:
+Now I know we can leverage overpass turbo to generate a query to find house number 356 in a region. This challenge would have taken atleast 3 hours for anyone to solve. The only way to solve this challenge would be to sit through and look up every possible location on map. Theres no other way to do this that I know of.
+
 
 3. AI
 
