@@ -1,0 +1,34 @@
+makeki
+
+I sshed into the machine this time using trinity's creds that we got from the last challenge. Once again just like first challenge, I grep'ed architect. You could see the line where username=architect and base64 encoded password is given. Decoding it will give you the flag.
+
+trinity@sysadmin-track:/$ grep -Ri architect 2>/dev/null
+etc/subgid:architect:296608:65536
+etc/subuid:architect:296608:65536
+etc/group-:challenger:x:1003:morpheus,trinity,architect,oracle,neo
+etc/group-:architect:x:1006:
+etc/grub.d/30_os-prober:        # TRANSLATORS: it refers to kernel architecture (32-bit)
+etc/grub.d/30_os-prober:        # TRANSLATORS: it refers to kernel architecture (64-bit)
+etc/subuid-:architect:296608:65536
+etc/subgid-:architect:296608:65536
+etc/group:challenger:x:1003:morpheus,trinity,architect,oracle,neo,cypher
+etc/group:architect:x:1006:
+etc/fstab:#//TheMAtrix/phone  /media/Matrix  cifs  username=architect,password=$(base64 -d "RkxBRy0yMzJmOTliNDE3OGJkYzdmZWY3ZWIxZjBmNzg4MzFmOQ=="),iocharset=utf8,sec=ntlm  0  0
+etc/systemd/user.conf:#SystemCallArchitectures=
+etc/systemd/system/sysinit.target.wants/systemd-timesyncd.service:SystemCallArchitectures=native
+etc/systemd/system/dbus-org.freedesktop.resolve1.service:SystemCallArchitectures=native
+etc/systemd/system/dbus-org.freedesktop.timesync1.service:SystemCallArchitectures=native
+etc/systemd/system/multi-user.target.wants/systemd-networkd.service:SystemCallArchitectures=native
+etc/systemd/system/multi-user.target.wants/systemd-resolved.service:SystemCallArchitectures=native
+etc/systemd/system/dbus-org.freedesktop.network1.service:SystemCallArchitectures=native
+etc/systemd/system.conf:#SystemCallArchitectures=
+etc/passwd:architect:x:1003:1006::/home/architect:/bin/bash
+etc/passwd-:architect:x:1003:1006::/home/architect:/bin/bash
+^C
+
+
+trinity@sysadmin-track:/$ echo "RkxBRy0yMzJmOTliNDE3OGJkYzdmZWY3ZWIxZjBmNzg4MzFmOQ==" | base64 -d
+FLAG-232f99b4178bdc7fef7eb1f0f78831f9
+trinity@sysadmin-track:/$
+
+

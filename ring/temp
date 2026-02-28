@@ -1,0 +1,53 @@
+
+
+1. 
+I talked about some problems in my lab 1 submission asw. In short the issue with all the previous implementation is the lack of plugin support in the sense we imagine.
+qbittorrent is a great application and is in some sense still an industry standards. Its facing stability issues with newer releases, theres been issues raised about memory leaks.
+But we can't say if its because of usage of C++, or just bad coding practices being followed during the production. The other problem with qbittorrent is that the plugins it allows are mostly 
+search plugins, the "lookup different torrents from an inbuilt " search bar type. The functionality addition is not as impactful as we have imagined.
+Theres a goclient called rain thats really popular, but the interface of that application is not user friendly at all. Many of such implementations are not with normal consumer in mind. 
+They are built by developers for developers. They also use the native Go plugin, which doesn't support Windows. And we need to compile everything with the same version of Go for it to all work, seems simple for first release but causes issues the further in development software goes.
+The node.js implementations are just slow, js event loops are single threaded so there could an event like hashing which can pause our network events. Plus every connection will create bloaty objects,
+using more ram.
+
+2.
+I feel incremental prototyping is the way to go, later rapid application development spun in my mind asw after talking with other teammates.
+The users in our case is us ourselves for  now. Rapid application development requires you to virtually be communicating with users since the beginning. RAD is a "fake it till you make it" to get user
+feedback model. It could work if the application is something like recipe generator or something that has a major GUI element. We can't fake our way through a protocol, I believe rad is suited only for CRUD based application and not high end applications like these. Theres simply no way to rush through development here.
+Plus I am sure that a bunch of amateur college programmers will make a lot of mistakes during development, incremental prototyping would isolate those mistakes (hopefully) to modules.
+Hence, the reasoning behind incremental prototyping is each team member could build his own component. This isn't possible without modular philosophy. Incremental prototyping would force us to build modularly.
+We all could define parts and break our core system into those. Throwaway prototyping and structured evolutionary prototyping are less flexible compared to this, i.e., if we feel something is wrong in 
+core system, or our requirements change, we'll just need to fix a few modules instead of remaking everything.
+
+3. 
+Business Objective:
+As members of the opensource club our software would be open-source, since its a native client software we don't need money for setting up any infrastructure. So our business model is the same as of any
+open source software, it'll run on good faith, donations and contributions.
+However if revenue HAS to be generated somehow, it could be by creating a public plugin portal. We could allow people to sell their plugins online on that portal and we'd take a cut from those purchases.
+Thinking about customer experience and loyality. Why would some normal guy even care about using our software? Theres already so many clients out there.
+Heres a really nice post on yc about this, https://news.ycombinator.com/item?id=43158944
+Its easy to make a client but really hard to make "great" client, theres so many requirements one needs to nail. And yeah we won't be able to fufill most of those. But then who will use our software?
+I feel its important to restate that the selling point of our software isnt that it will be the fastest, or the most resource effiecent. Our selling point is that our core software comes in one small package, upon which people can plug in any additional functionality (which could be anything) that they want. Instead of building a perfect client ourselves, we are allowing people to build castles of their own.
+
+Purpose:
+I think I implicitly stated my view of the purpose of the project in Business objective itself. Apart from my personal view, there are members eager to implement real time security plugins.
+
+Target User:
+Anyone who uses torrents is a potential user. The benefit is that he'd need to install core application and then he has the choice to install plugins of his choice. 
+Also the team plans to put up a nextjs frontend providing gui, so that makes life even easier for user.
+
+Resource Consumption:
+
+That would depend on the plugins that are being used. Like if we are going with active security plugins, there has to be a tradeoff in resource used. 
+About the system resources, it'll be same as other clients. Memory and cpu consumption will be minimal however i/o is where the bottleneck will be. Torrent writes data randomly so we'd have to 
+write a buffer that clubs random chunks that are coming and pushes larger chunks into storage.
+
+Project Scope:
+After discussing with the team about the the scope, we are building:
+A modular bitTorrent client written in Go that allow plug in play plugins.
+Two proof of concept plugins - suspicious ip blocker, and file signature checker.
+A nice gui frontend.
+
+The application will be desktop only at the moment. We won't include any functionality for media streaming from torrent. Nor are we going with trackerless torrenting at the moment.
+
+

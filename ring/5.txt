@@ -1,0 +1,34 @@
+makeki
+
+well the instructions are clear we need to decrypt the .enc file.
+
+oracle@sysadmin-track:~$ cat encflag.txt.enc
+U2FsdGVkX1/tRRmR6Av0LbIcKc7ixjz6b4vwkLpEBqYwnLtbFHkbslPUO6RZYfus
+15eoo6cJiKfiLSD6KPHiyQ==
+
+looks like some form of base64, but that isn't encryption lol. So its prolly not that. But theres padding so there is some encoding, this might be a salted encoded blob.
+I'll enumerate things user oracle can read.
+
+oracle@sysadmin-track:~$ find -type f -user oracle -readable 2>/dev/null
+./.bashrc
+./.bash_logout
+./encflag.txt.enc
+./flag.txt
+./.profile
+./.ssh/authorized_keys
+./.ssh/id_rsa.pub
+./.ssh/id_rsa
+
+not impressive.
+I put the string into gemini and it said that the first few characters stand for salted and that this might be a openssl encrypted blob.
+So I tried searching for 'openssl' in all readable files of oracle user.
+
+oracle@sysadmin-track:~$ find -type f -readable -user $(whoami) | grep 'openssl' -R 2>/dev/null
+.bashrc:alias reveal="openssl enc -aes-256-cbc -a -d -pbkdf2 -in encflag.txt.enc -k 'lp6PWgOwDctq5Yx7ntTmBpOISc'"
+.profile:alias reveal="openssl enc -aes-256-cbc -a -d -pbkdf2 -in encflag.txt.enc -k 'lp6PWgOwDctq5Yx7ntTmBpOISc'"
+
+-d flag decrypts the stuff so typing reveal should show me the flag.
+
+oracle@sysadmin-track:~$ reveal
+FLAG-54e7f8d0ea560fa7ed98e832900fc45b
+
